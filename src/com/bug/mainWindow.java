@@ -5,13 +5,16 @@
  */
 package com.bug;
 
-
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import org.apache.xerces.parsers.*;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+//import org.apache.xerces.parsers.*;
 import org.xml.sax.InputSource;
 
 /**
@@ -20,25 +23,22 @@ import org.xml.sax.InputSource;
  */
 public class mainWindow extends javax.swing.JFrame {
 
-   
+    DefaultMutableTreeNode modelRoot;
+
     SAXTreeBuilder saxTree;
 
     public mainWindow() {
         initComponents();
+        jComboBox1.setEnabled(false);
     }
 
-    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-
-        jCheckBox1 = new javax.swing.JCheckBox();
         jButton1 = new javax.swing.JButton();
         jComboBox1 = new javax.swing.JComboBox<>();
         jButton2 = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
-
-        jCheckBox1.setText("jCheckBox1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(490, 160));
@@ -56,10 +56,14 @@ public class mainWindow extends javax.swing.JFrame {
             }
         });
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Manual select ", "Select segments", "Clear segments", " " }));
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Manual select ", "Select segments" }));
 
         jButton2.setText("GO!");
-
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
         tree = new CheckBoxTree(null);
         jScrollPane2.setViewportView(tree);
 
@@ -94,37 +98,57 @@ public class mainWindow extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-    private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {                                           
-        System.out.println(jComboBox1.getSelectedItem().toString());
-        DefaultMutableTreeNode tst=(DefaultMutableTreeNode)tree.getModel().getRoot();
-        CheckBoxElement data = (CheckBoxElement)tst.getUserObject();
-        System.out.println(data.name);
-    } 
+    private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {
+        modelRoot = (DefaultMutableTreeNode) ((DefaultMutableTreeNode) tree.getModel().getRoot());
+        DefaultMutableTreeNode tst = (DefaultMutableTreeNode) ((DefaultMutableTreeNode) tree.getModel().getRoot());
+        if (jComboBox1.getSelectedIndex() == 1) {
+            ComboActions act = new ComboActions(tst);
+            act.segmentsSelected();
+            tree.setModel(new DefaultTreeModel(tst));
+        }
+        if (jComboBox1.getSelectedIndex() == 0) {
+           tree.setModel(new DefaultTreeModel(modelRoot));
+        }
+        
+        int i;
+        for (i = 0; i <= tree.getRowCount(); i++) {
+            tree.expandRow(i);
+        }
+    }
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt)  {
+         Tree2Xml tt= new Tree2Xml();
+         try{
+         tt.convert((DefaultMutableTreeNode)tree.getModel().getRoot());
+         }catch(Exception ex){}
+         
+    }
+
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         JFileChooser fileopen = new JFileChooser();
         int ret = fileopen.showDialog(null, "Открыть файл");
         if (ret == JFileChooser.APPROVE_OPTION) {
             File file = fileopen.getSelectedFile();
-            //jTextField1.setText(file.getAbsolutePath());
             DefaultMutableTreeNode top = new DefaultMutableTreeNode(file);
-//              DefaultMutableTreeNode top = new DefaultMutableTreeNode("XML Document"); 
-
             saxTree = new SAXTreeBuilder(top);
-
             try {
-                SAXParser saxParser = new SAXParser() {
-                };
+                org.apache.xerces.parsers.SAXParser saxParser = new org.apache.xerces.parsers.SAXParser();
                 saxParser.setContentHandler(saxTree);
                 saxParser.parse(new InputSource(new FileInputStream(file)));
             } catch (Exception ex) {
                 top.add(new DefaultMutableTreeNode(ex.getMessage()));
             }
-            //DefaultTreeModel treeModel = new DefaultTreeModel(top); 
             tree.setModel(new DefaultTreeModel(top));
             tree.putClientProperty("JTree.lineStyle", "None");
             tree.setEditable(false);
+            jComboBox1.setEnabled(true);
+            jComboBox1.setSelectedIndex(1);
+            DefaultMutableTreeNode tst = (DefaultMutableTreeNode) ((DefaultMutableTreeNode) tree.getModel().getRoot());
+            ComboActions act = new ComboActions(tst);
+            act.segmentsSelected();
+            tree.setModel(new DefaultTreeModel(tst));
             int i;
-            for(i = 0; i <= tree.getRowCount(); i++) {
+            for (i = 0; i <= tree.getRowCount(); i++) {
                 tree.expandRow(i);
             }
         }
@@ -168,7 +192,6 @@ public class mainWindow extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
-    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JScrollPane jScrollPane2;
     private com.bug.CheckBoxTree tree;

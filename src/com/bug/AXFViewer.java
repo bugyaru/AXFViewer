@@ -16,7 +16,7 @@ public class AXFViewer {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        var test=new mainWindow();
+        mainWindow test=new mainWindow();
         test.setVisible(true);
     }
     

@@ -2,7 +2,6 @@ package com.bug;
 
 // Дерево с отображаением флажков в листьях 
 import java.awt.*;
-import static java.awt.Color.white;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.tree.*;
@@ -44,10 +43,10 @@ public class CheckBoxTree extends JTree {
                 // Если нет, то используется стандартный объект
                 return renderer.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
             }
-            var data = ((DefaultMutableTreeNode) value).getUserObject();
+            Object data = ((DefaultMutableTreeNode) value).getUserObject();
             // Проверка, являются ли данные CheckBoxElement
             if (data instanceof CheckBoxElement) {
-                var element = (CheckBoxElement) data;
+                CheckBoxElement element = (CheckBoxElement) data;
                 // Настройка флажка и текста
                 setSelected(element.selected);
                 if (element.type == 0) {
@@ -65,7 +64,7 @@ public class CheckBoxTree extends JTree {
                     setBackground(new Color(192, 252, 255));
                     
                 }else{
-                    setBackground(white);
+                    setBackground(Color.white);
                 }
                 return this;
             }
@@ -80,15 +79,15 @@ public class CheckBoxTree extends JTree {
         public void mousePressed(MouseEvent e) {
             // Путь к узлу
            //TreePath path =getSelectionPath();
-           var path = getClosestPathForLocation(e.getX(), e.getY());
+           TreePath path = getClosestPathForLocation(e.getX(), e.getY());
             if (path == null) {
                 return;
             }
-            var node = (DefaultMutableTreeNode) path.getLastPathComponent();
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
             // Проверка принадлежности узла к стандартной модели
             if (node.getUserObject() instanceof CheckBoxElement) {
                 // Изменение состояния флажка
-                var element = (CheckBoxElement) node.getUserObject();
+                CheckBoxElement element = (CheckBoxElement) node.getUserObject();
                 element.selected = !element.selected;
                 repaint();
                 
@@ -97,19 +96,18 @@ public class CheckBoxTree extends JTree {
     }
     class KeyListener extends KeyAdapter {
         public void keyPressed(KeyEvent e) {
-            var path =getSelectionPaths();
+            TreePath[] path =getSelectionPaths();
             if (path == null) {
                 return;
             }
-            for (TreePath path1 : path) {
-                var node = (DefaultMutableTreeNode) path1.getLastPathComponent();
-                // Проверка принадлежности узла к стандартной модели
-                if (node.getUserObject() instanceof CheckBoxElement && (e.getKeyCode()==32||e.getKeyCode()==10)) {
-                    // Изменение состояния флажка
-                    var element = (CheckBoxElement) node.getUserObject();
-                    element.selected = !element.selected;
-                }
-            }
+            for(int i=0; i<path.length; i++){
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) path[i].getLastPathComponent();
+            // Проверка принадлежности узла к стандартной модели
+            if (node.getUserObject() instanceof CheckBoxElement && (e.getKeyCode()==32||e.getKeyCode()==10)) {
+                // Изменение состояния флажка
+                CheckBoxElement element = (CheckBoxElement) node.getUserObject();
+                element.selected = !element.selected;
+            }}
             if (e.getKeyCode()==27)
                 clearSelection();
             repaint();
